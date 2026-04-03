@@ -1,0 +1,41 @@
+@extends('layouts.church-admin')
+@section('active', 'meetings')
+
+@section('title', 'Schedule Meeting')
+@section('header_kicker', 'Meetings')
+@section('header_title', 'Schedule Meeting')
+
+@section('content')
+    <form id="meetingCreateForm" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 max-w-3xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="text-sm text-slate-500">Meeting Type</label>
+                <select name="meeting_type" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+                    @foreach(config('meeting.meeting_types', ['general', 'leadership']) as $type)
+                        <option value="{{ $type }}">{{ ucfirst($type) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="text-sm text-slate-500">Meeting Date</label>
+                <input type="date" name="meeting_date" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-sm text-slate-500">Agenda</label>
+                <textarea name="agenda" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" rows="3"></textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-sm text-slate-500">Minutes</label>
+                <textarea name="minutes" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" rows="4"></textarea>
+            </div>
+        </div>
+        <div class="mt-6 flex items-center gap-3">
+            <button class="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm" type="submit">Save Meeting</button>
+            <a href="/admin/church/meetings" class="text-sm text-slate-500">Cancel</a>
+        </div>
+    </form>
+@endsection
+
+@push('scripts')
+    <script src="/js/church-meetings-create.js"></script>
+@endpush
