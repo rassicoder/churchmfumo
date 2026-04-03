@@ -5,7 +5,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 
 return [
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', env('APP_ENV') === 'production' ? 'stderr' : 'stack'),
     'deprecations' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
 
     'channels' => [
