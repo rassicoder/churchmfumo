@@ -14,7 +14,11 @@
         return AdminApp.fetchWithAuth(url, {}).then(function (res) {
             if (res.status === 401) {
                 localStorage.removeItem('api_token');
-                window.location.href = '/admin/login';
+                if (window.AdminApp && typeof AdminApp.redirectToLogin === 'function') {
+                    AdminApp.redirectToLogin();
+                } else {
+                    window.location.href = '/admin/login';
+                }
                 return null;
             }
             if (res.status === 403) {

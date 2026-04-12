@@ -19,7 +19,11 @@
     function ensureAuth(res) {
         if (res.status === 401) {
             localStorage.removeItem('api_token');
-            window.location.href = '/admin/login';
+            if (window.AdminApp && typeof AdminApp.redirectToLogin === 'function') {
+                AdminApp.redirectToLogin();
+            } else {
+                window.location.href = '/church/login';
+            }
             return false;
         }
         return true;

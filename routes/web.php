@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('home');
 });
 
-Route::view('/admin/login', 'admin.login')->name('admin.login');
+Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
+Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login.submit');
+Route::get('/church/login', [AuthController::class, 'showChurchLogin'])->name('church.login');
+Route::post('/church/login', [AuthController::class, 'churchLogin'])->name('church.login.submit');
 
 Route::get('/health', function () {
     return response()->json([

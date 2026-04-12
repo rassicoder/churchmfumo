@@ -17,13 +17,21 @@
     async function requestJson(url, options) {
         const token = getToken();
         if (!token) {
-            window.location.href = '/admin/login';
+            if (window.AdminApp && typeof AdminApp.redirectToLogin === 'function') {
+                AdminApp.redirectToLogin();
+            } else {
+                window.location.href = '/admin/login';
+            }
             throw new Error('Missing token');
         }
         const res = await fetchWithAuth(token, url, options);
         if (res.status === 401) {
             localStorage.removeItem('api_token');
-            window.location.href = '/admin/login';
+            if (window.AdminApp && typeof AdminApp.redirectToLogin === 'function') {
+                AdminApp.redirectToLogin();
+            } else {
+                window.location.href = '/admin/login';
+            }
             throw new Error('Unauthorized');
         }
         if (res.status === 403) {
@@ -52,15 +60,14 @@
         const payload = data.data || {};
         const user = payload.user || payload;
         const role = payload.role || (payload.roles ? payload.roles[0] : null);
+        const roles = Array.isArray(payload.roles) ? payload.roles : (role ? [role] : []);
         const churchId = payload.church_id || user.church_id || null;
-        return { user: user, role: role, churchId: churchId };
+        return { user: user, role: role, roles: roles, churchId: churchId };
     }
 
-    function applyRoleUI(role) {
+    function applyRoleUI() {
         const churchesCard = document.getElementById('totalChurchesCard');
-        if (role === 'Church Admin') {
-            if (churchesCard) churchesCard.classList.add('d-none');
-        } else if (churchesCard) {
+        if (churchesCard) {
             churchesCard.classList.remove('d-none');
         }
     }
@@ -414,8 +421,8 @@
         setLoading(true);
         setDashboardError('');
         try {
-            const userInfo = await loadCurrentUser();
-            applyRoleUI(userInfo.role);
+            await loadCurrentUser();
+            applyRoleUI();
             const tasks = [
                 loadStats(),
                 loadChurchPerformanceChart(),
@@ -429,7 +436,11 @@
             const rejected = results.find(function (item) { return item.status === 'rejected'; });
             if (rejected) {
                 const error = rejected.reason || {};
-                const message = error.status === 403 ? 'Unauthorized' : (error.message || 'Failed to load dashboard');
+                if (error.status === 403) {
+                    setDashboardError('');
+                    return;
+                }
+                const message = error.message || 'Failed to load dashboard';
                 toast(message, 'error');
                 setDashboardError(message);
             }

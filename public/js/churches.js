@@ -1,7 +1,7 @@
 (function () {
     let churchesTable = null;
     let modal = null;
-    let isSuperAdmin = false;
+    let isSuperAdmin = true;
 
     function formatDate(value) {
         if (!value) return '-';
@@ -262,14 +262,7 @@
         modal = new bootstrap.Modal(document.getElementById('churchModal'));
         const createBtn = document.getElementById('churchCreateBtn');
         AdminApp.getCurrentUser().then(function (profile) {
-            const role = profile && (profile.role || (profile.roles ? profile.roles[0] : null));
-            isSuperAdmin = role === 'Super Admin';
-            const table = document.getElementById('churches-table');
-            if (!isSuperAdmin) {
-                if (createBtn) createBtn.classList.add('d-none');
-                const actionHeader = table ? table.querySelector('thead th:last-child') : null;
-                if (actionHeader) actionHeader.classList.add('d-none');
-            } else if (createBtn) {
+            if (createBtn) {
                 createBtn.addEventListener('click', function () {
                     openCreateModal();
                 });
@@ -277,6 +270,11 @@
             initTable();
             initForm();
         }).catch(function () {
+            if (createBtn) {
+                createBtn.addEventListener('click', function () {
+                    openCreateModal();
+                });
+            }
             initTable();
             initForm();
         });

@@ -15,6 +15,40 @@
         localStorage.removeItem('user');
     }
 
+    function getStoredCurrentUser() {
+        const cached = localStorage.getItem('current_user');
+        if (!cached) return null;
+        try {
+            return JSON.parse(cached);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function resolveLoginPath() {
+        const profile = getStoredCurrentUser();
+        const role = profile && (profile.role || (profile.roles ? profile.roles[0] : null));
+        const path = window.location.pathname || '';
+
+        if (String(role || '').toLowerCase() === 'church admin') {
+            return '/church/login';
+        }
+
+        if (
+            path === '/admin/church-dashboard' ||
+            path.startsWith('/admin/church/') ||
+            path.startsWith('/admin/church-')
+        ) {
+            return '/church/login';
+        }
+
+        return '/admin/login';
+    }
+
+    function redirectToLogin() {
+        window.location.href = resolveLoginPath();
+    }
+
     function showToast(message, type) {
         const container = document.getElementById('toastContainer');
         if (!container) return;
@@ -96,7 +130,7 @@
         const res = await fetchWithAuth(token, url, options);
         if (res.status === 401) {
             clearToken();
-            window.location.href = '/admin/login';
+            redirectToLogin();
             const authError = new Error('Unauthorized');
             authError.status = 401;
             throw authError;
@@ -173,12 +207,12 @@
             // Ignore logout errors, still clear token.
         }
         clearToken();
-        window.location.href = '/admin/login';
+        redirectToLogin();
     }
 
     function ensureAuth() {
         if (!getToken()) {
-            window.location.href = '/admin/login';
+            redirectToLogin();
         }
     }
 
@@ -199,7 +233,7 @@
     function redirectNotAllowed(targetUrl) {
         showToast('You are not allowed to access this page', 'error');
         setTimeout(function () {
-            window.location.href = targetUrl || '/admin/dashboard';
+            window.location.href = targetUrl || (resolveLoginPath() === '/church/login' ? '/admin/church-dashboard' : '/admin/dashboard');
         }, 700);
     }
 
@@ -459,5 +493,7 @@
         fetchWithAuth: fetchWithAuth,
         getCurrentUser: getCurrentUser,
         redirectNotAllowed: redirectNotAllowed,
+        resolveLoginPath: resolveLoginPath,
+        redirectToLogin: redirectToLogin,
     };
 })();
